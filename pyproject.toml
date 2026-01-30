@@ -1,6 +1,6 @@
 [project]
 name = "getting_started"
-version = "0.0.0"
+version = "0.1.0"
 description = "A playground for getting started with Zenable"
 authors = [
     { name = "Zenable Inc", email = "Python@zenable.io" }

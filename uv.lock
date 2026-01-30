@@ -205,7 +205,7 @@ wheels = [
 
 [[package]]
 name = "getting-started"
-version = "0.0.0"
+version = "0.1.0"
 source = { virtual = "." }
 
 [package.dev-dependencies]
