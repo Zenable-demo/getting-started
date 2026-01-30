@@ -1,0 +1,25 @@
+description: A playground for getting started with Zenable
+name: getting_started
+origin:
+  generated: true
+  template:
+    branch: main
+    commit hash: b200cc328d24dae58f74e6627451803081e5040e
+    cookiecutter:
+      _checkout: null
+      _repo_dir: /Users/jonzeolla/.cookiecutters/ai-native-python
+      _template: gh:zenable-io/ai-native-python
+      company_domain: zenable.io
+      company_name: Zenable Inc
+      dockerhub: 'no'
+      github_org: zenable-demo
+      license: MIT
+      project_name: getting-started
+      project_owner_github_username: jonzeolla
+      project_short_description: A playground for getting started with Zenable
+      project_slug: getting_started
+      public: 'yes'
+      python_version: '3.13'
+    dirty: false
+    location: https://github.com/zenable-io/ai-native-python.git
+  timestamp: '2026-01-30T16:42:01+00:00'
