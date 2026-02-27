@@ -3,10 +3,7 @@
 Test main.py module
 """
 
-import subprocess
-import sys
-from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -19,30 +16,31 @@ def test_main_import():
 
 @pytest.mark.unit
 def test_main_function():
-    """Test that main() raises NotImplementedError"""
+    """Test that main() connects to postgres and stores a record"""
     from main import main
 
-    # Mock the argument parsing to avoid conflicts with pytest args
-    with patch("getting_started.config.get_args_config") as mock_args:
-        import logging
+    import logging
 
+    mock_conn = MagicMock()
+    mock_cursor = MagicMock()
+    mock_cursor.fetchone.return_value = {"id": 1}
+    mock_cursor.fetchall.return_value = []
+    mock_conn.cursor.return_value.__enter__ = MagicMock(return_value=mock_cursor)
+    mock_conn.cursor.return_value.__exit__ = MagicMock(return_value=False)
+
+    with (
+        patch("getting_started.config.get_args_config") as mock_args,
+        patch("main.connect", return_value=mock_conn),
+        patch("main.create_table") as mock_create_table,
+        patch("main.store_record", return_value=1) as mock_store_record,
+        patch("main.get_records", return_value=[]) as mock_get_records,
+    ):
         mock_args.return_value = {"loglevel": logging.WARNING}
+        main()
 
-        with pytest.raises(NotImplementedError):
-            main()
-
-
-@pytest.mark.unit
-def test_main_as_script():
-    """Test that main.py raises NotImplementedError when run as a script"""
-    main_path = Path(__file__).parent.parent / "src" / "main.py"
-
-    result = subprocess.run(
-        [sys.executable, str(main_path)],
-        capture_output=True,
-        text=True,
-    )
-
-    # Should exit with code 1 due to NotImplementedError
-    assert result.returncode == 1
-    assert "NotImplementedError" in result.stderr
+        mock_create_table.assert_called_once_with(mock_conn)
+        mock_store_record.assert_called_once_with(
+            mock_conn, name="startup", data="Application started successfully"
+        )
+        mock_get_records.assert_called_once_with(mock_conn)
+        mock_conn.close.assert_called_once()
