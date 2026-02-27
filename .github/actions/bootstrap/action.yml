@@ -78,6 +78,8 @@ runs:
       with:
         path: ~/.cache/pre-commit
         key: pre-commit|${{ env.PY }}|${{ hashFiles(format('{0}/.pre-commit-config.yaml', inputs.working-directory)) }}
+        restore-keys: |
+          pre-commit|${{ env.PY }}|
 
     - name: Initialize the repository
       working-directory: ${{ inputs.working-directory }}
