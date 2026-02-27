@@ -3,7 +3,14 @@
 getting-started script entrypoint
 """
 
+from pathlib import Path
+
 from getting_started import config
+from getting_started.guardrails import (
+    create_guardrail_table,
+    scan_directory,
+    store_findings,
+)
 from getting_started.postgres import connect, create_table, get_records, store_record
 
 
@@ -24,6 +31,17 @@ def main():
                 record["name"],
                 record["created_at"],
             )
+
+        # Run guardrails scan
+        scan_dir = Path(config.get_scan_dir())
+        create_guardrail_table(conn)
+        result = scan_directory(scan_dir)
+        stored_count = store_findings(conn, result)
+        log.info("Guardrails scan complete: %d findings stored", stored_count)
+
+        summary = result.summary_by_pattern()
+        for pattern_name, count in summary.items():
+            log.info("  %s: %d finding(s)", pattern_name, count)
     finally:
         conn.close()
         log.info("Database connection closed")
