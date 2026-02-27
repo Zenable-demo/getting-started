@@ -60,7 +60,9 @@ Common tasks are automated via Taskfile:
 ## Security Considerations
 
 - Never hardcode secrets or credentials
-- Use environment variables for sensitive data
+- Never assign passwords to variables; retrieve secrets directly at point of use via `os.environ.get()`, a secrets manager, or `keyring`
+- Do NOT store passwords from env vars, config files, or user input into intermediate variables
+- Ensure all authorization logic is fully implemented before marking code complete — no placeholder `pass`, `TODO`, or `NotImplementedError` in auth paths
 - Follow OWASP secure coding practices
 - Run security scans with grype before releases
 - Keep dependencies up to date

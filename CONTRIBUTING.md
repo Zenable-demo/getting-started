@@ -44,4 +44,12 @@ git commit -m "feat: add user profile page"
 git commit -m "feat!: redesign authentication system
 
 BREAKING CHANGE: The login API now requires a different payload format"
+BREAKING CHANGE: The login API now requires a different payload format"
 ```
+
+## Security guidelines
+
+- **Never hardcode secrets, passwords, or API keys** in source code or commit them to the repository.
+- Use environment variables or a secrets manager (e.g., `os.environ.get('SECRET')`) at the point of use — do not assign secrets to intermediate variables.
+- Do not disable SSL/TLS verification in any code.
+- Authorization and authentication logic must be fully implemented before merging — do not merge placeholder or stub auth code.
