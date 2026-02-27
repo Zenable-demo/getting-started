@@ -14,6 +14,8 @@ from typing import Optional
 
 import psycopg
 
+from getting_started.encryption import encrypt
+
 LOG = logging.getLogger(__name__)
 
 GUARDRAIL_TABLE = "guardrail_findings"
@@ -224,6 +226,7 @@ def create_guardrail_table(conn: psycopg.Connection) -> None:
     query = f"""
     CREATE TABLE IF NOT EXISTS {GUARDRAIL_TABLE} (
         id SERIAL PRIMARY KEY,
+        customer_id VARCHAR(255) NOT NULL,
         file_path TEXT NOT NULL,
         line_number INTEGER NOT NULL,
         pattern_name VARCHAR(255) NOT NULL,
@@ -237,12 +240,16 @@ def create_guardrail_table(conn: psycopg.Connection) -> None:
     LOG.info("Table '%s' is ready", GUARDRAIL_TABLE)
 
 
-def store_findings(conn: psycopg.Connection, result: ScanResult) -> int:
-    """Store scan findings in the postgres database.
+def store_findings(conn: psycopg.Connection, result: ScanResult, customer_id: str) -> int:
+    """Store scan findings in the database with per-customer encryption.
+
+    Sensitive fields (file_path, line_content) are encrypted using a key
+    derived from the customer_id before being written to the database.
 
     Args:
         conn: An active psycopg connection.
         result: The scan result containing findings to store.
+        customer_id: Customer identifier used for encryption key derivation.
 
     Returns:
         The number of findings stored.
@@ -252,23 +259,30 @@ def store_findings(conn: psycopg.Connection, result: ScanResult) -> int:
         return 0
 
     query = f"""
-    INSERT INTO {GUARDRAIL_TABLE} (file_path, line_number, pattern_name, line_content, scanned_at)
-    VALUES (%s, %s, %s, %s, %s)
+    INSERT INTO {GUARDRAIL_TABLE}
+        (customer_id, file_path, line_number, pattern_name, line_content, scanned_at)
+    VALUES (%s, %s, %s, %s, %s, %s)
     """
     with conn.cursor() as cur:
         for finding in result.findings:
+            encrypted_file_path = encrypt(finding.file_path, customer_id)
+            encrypted_line_content = encrypt(finding.line_content, customer_id)
             cur.execute(
                 query,
                 (
-                    finding.file_path,
+                    customer_id,
+                    encrypted_file_path,
                     finding.line_number,
                     finding.pattern_name,
-                    finding.line_content,
+                    encrypted_line_content,
                     result.scanned_at,
                 ),
             )
     conn.commit()
     LOG.info(
-        "Stored %d guardrail findings in '%s'", len(result.findings), GUARDRAIL_TABLE
+        "Stored %d guardrail findings in '%s' for customer '%s'",
+        len(result.findings),
+        GUARDRAIL_TABLE,
+        customer_id,
     )
     return len(result.findings)

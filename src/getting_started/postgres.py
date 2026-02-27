@@ -1,5 +1,7 @@
 """
 PostgreSQL database integration for getting-started.
+
+All sensitive data is encrypted at rest using per-customer keys.
 """
 
 import logging
@@ -9,6 +11,8 @@ from typing import Optional
 
 import psycopg
 from psycopg.rows import dict_row
+
+from getting_started.encryption import decrypt, encrypt
 
 LOG = logging.getLogger(__name__)
 
@@ -62,6 +66,7 @@ def create_table(conn: psycopg.Connection, table: str = DEFAULT_TABLE) -> None:
     query = f"""
     CREATE TABLE IF NOT EXISTS {table} (
         id SERIAL PRIMARY KEY,
+        customer_id VARCHAR(255) NOT NULL,
         name VARCHAR(255) NOT NULL,
         data TEXT,
         created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -76,50 +81,69 @@ def create_table(conn: psycopg.Connection, table: str = DEFAULT_TABLE) -> None:
 def store_record(
     conn: psycopg.Connection,
     name: str,
+    customer_id: str,
     data: Optional[str] = None,
     table: str = DEFAULT_TABLE,
 ) -> int:
-    """Store a record in the database.
+    """Store a record in the database with per-customer encryption.
+
+    The data field is encrypted using a key derived from the customer_id
+    before being written to the database.
 
     Args:
         conn: An active psycopg connection.
         name: Name for the event record.
-        data: Optional text data to store.
+        customer_id: Customer identifier used for encryption key derivation.
+        data: Optional text data to store (will be encrypted).
         table: Target table name.
 
     Returns:
         The id of the inserted record.
     """
+    encrypted_data = encrypt(data, customer_id)
     query = (
-        f"INSERT INTO {table} (name, data, created_at) VALUES (%s, %s, %s) RETURNING id"
+        f"INSERT INTO {table} (customer_id, name, data, created_at) "
+        f"VALUES (%s, %s, %s, %s) RETURNING id"
     )
     with conn.cursor() as cur:
-        cur.execute(query, (name, data, datetime.now(timezone.utc)))
+        cur.execute(query, (customer_id, name, encrypted_data, datetime.now(timezone.utc)))
         result = cur.fetchone()
     conn.commit()
     record_id = result["id"]
-    LOG.info("Stored record id=%d name='%s'", record_id, name)
+    LOG.info("Stored record id=%d name='%s' customer_id='%s'", record_id, name, customer_id)
     return record_id
 
 
 def get_records(
     conn: psycopg.Connection,
+    customer_id: str,
     table: str = DEFAULT_TABLE,
     limit: int = 10,
 ) -> list[dict]:
-    """Retrieve recent records from the database.
+    """Retrieve recent records for a customer, decrypting data fields.
+
+    Only returns records belonging to the specified customer. The data
+    field is decrypted using the customer's derived key.
 
     Args:
         conn: An active psycopg connection.
+        customer_id: Customer identifier used for decryption and filtering.
         table: Source table name.
         limit: Maximum number of records to return.
 
     Returns:
-        A list of record dictionaries.
+        A list of record dictionaries with decrypted data.
     """
-    query = f"SELECT id, name, data, created_at FROM {table} ORDER BY created_at DESC LIMIT %s"
+    query = (
+        f"SELECT id, customer_id, name, data, created_at FROM {table} "
+        f"WHERE customer_id = %s ORDER BY created_at DESC LIMIT %s"
+    )
     with conn.cursor() as cur:
-        cur.execute(query, (limit,))
+        cur.execute(query, (customer_id, limit))
         records = cur.fetchall()
-    LOG.info("Retrieved %d records from '%s'", len(records), table)
+
+    for record in records:
+        record["data"] = decrypt(record["data"], customer_id)
+
+    LOG.info("Retrieved %d records from '%s' for customer '%s'", len(records), table, customer_id)
     return records
