@@ -128,7 +128,7 @@ def test_docker_image():
             cwd=project_root,
         )
 
-        # Test basic docker run without arguments (should raise NotImplementedError)
+        # Test basic docker run without arguments (should fail due to no postgres)
         process = subprocess.run(
             ["docker", "run", "--rm", f"{image_name}:latest"],
             capture_output=True,
@@ -137,8 +137,8 @@ def test_docker_image():
         assert process.returncode == 1, (
             f"Expected exit code 1, got: {process.returncode}"
         )
-        assert "NotImplementedError" in process.stderr.decode(), (
-            f"Expected NotImplementedError in stderr, got: {process.stderr.decode()}"
+        assert "OperationalError" in process.stderr.decode(), (
+            f"Expected OperationalError in stderr, got: {process.stderr.decode()}"
         )
 
         # Test that mutually exclusive arguments fail appropriately

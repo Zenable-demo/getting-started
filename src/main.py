@@ -18,7 +18,12 @@ def main():
         store_record(conn, name="startup", data="Application started successfully")
         records = get_records(conn)
         for record in records:
-            log.info("Record: id=%s name=%s created_at=%s", record["id"], record["name"], record["created_at"])
+            log.info(
+                "Record: id=%s name=%s created_at=%s",
+                record["id"],
+                record["name"],
+                record["created_at"],
+            )
     finally:
         conn.close()
         log.info("Database connection closed")

@@ -39,6 +39,8 @@ def test_main_function():
         main()
 
         mock_create_table.assert_called_once_with(mock_conn)
-        mock_store_record.assert_called_once_with(mock_conn, name="startup", data="Application started successfully")
+        mock_store_record.assert_called_once_with(
+            mock_conn, name="startup", data="Application started successfully"
+        )
         mock_get_records.assert_called_once_with(mock_conn)
         mock_conn.close.assert_called_once()

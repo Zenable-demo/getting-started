@@ -90,7 +90,9 @@ def store_record(
     Returns:
         The id of the inserted record.
     """
-    query = f"INSERT INTO {table} (name, data, created_at) VALUES (%s, %s, %s) RETURNING id"
+    query = (
+        f"INSERT INTO {table} (name, data, created_at) VALUES (%s, %s, %s) RETURNING id"
+    )
     with conn.cursor() as cur:
         cur.execute(query, (name, data, datetime.now(timezone.utc)))
         result = cur.fetchone()
