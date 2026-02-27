@@ -16,7 +16,7 @@ def test_get_args_config(mocker):
     """Test get_args_config()"""
     mocker.patch(
         "argparse.ArgumentParser.parse_args",
-        return_value=argparse.Namespace(loglevel=30),
+        return_value=argparse.Namespace(loglevel=30, scan_dir="."),
         autospec=True,
     )
 
@@ -29,7 +29,7 @@ def test_setup_logging(mocker):
     """Test setup_logging()"""
     mocker.patch(
         "argparse.ArgumentParser.parse_args",
-        return_value=argparse.Namespace(loglevel=30),
+        return_value=argparse.Namespace(loglevel=30, scan_dir="."),
         autospec=True,
     )
 

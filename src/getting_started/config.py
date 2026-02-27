@@ -37,6 +37,13 @@ def create_arg_parser() -> ArgumentParser:
     )
     parser.set_defaults(loglevel=logging.WARNING)
 
+    parser.add_argument(
+        "--scan-dir",
+        type=str,
+        default=".",
+        help="directory to scan for guardrails issues (default: current directory)",
+    )
+
     return parser
 
 
@@ -44,6 +51,16 @@ def get_args_config() -> dict:
     """Turn parse arguments into a config"""
     parser = create_arg_parser()
     return vars(parser.parse_args())
+
+
+def get_scan_dir() -> str:
+    """Get the scan directory from parsed arguments.
+
+    Returns:
+        The scan directory path as a string.
+    """
+    configuration = get_args_config()
+    return configuration.get("scan_dir", ".")
 
 
 def setup_logging() -> logging.Logger:
