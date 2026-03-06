@@ -44,4 +44,27 @@ git commit -m "feat: add user profile page"
 git commit -m "feat!: redesign authentication system
 
 BREAKING CHANGE: The login API now requires a different payload format"
+BREAKING CHANGE: The login API now requires a different payload format"
 ```
+
+## Running tests
+
+```bash
+task test
+```
+
+Run tests before opening a pull request. All tests must pass.
+
+## Security requirements
+
+- **Never** assign passwords or secrets to variables; retrieve them via `os.environ.get('SECRET')` or a secrets manager at the point of use.
+- **Never** hardcode credentials, API keys, or tokens in source files.
+- All database queries on multi-tenant data **must** be scoped to a `customer_id`.
+- Authorization logic must be fully implemented before merging — do not merge stubs or TODOs in auth paths.
+
+## Pull request process
+
+1. Branch from `main`; do **not** commit directly to `main`.
+2. Ensure `task lint` and `task test` pass locally.
+3. Use conventional commit messages (see [Creating a release](#creating-a-release)).
+4. Request at least one reviewer before merging.

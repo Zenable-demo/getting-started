@@ -137,11 +137,13 @@ with open("data.txt") as f:
 
 ## Security Guidelines
 
-1. **Never hardcode secrets** - use environment variables
+1. **Never hardcode secrets** - retrieve secrets directly from environment variables or a secrets manager at point of use; never assign passwords to variables (even temporarily)
 2. **Validate all inputs** - especially from external sources
 3. **Use parameterized queries** - prevent SQL injection
-4. **Keep dependencies updated** - check with `task security-scan`
-5. **Follow OWASP guidelines** - for web-facing code
+4. **Scope all multi-tenant DB queries** - always require and apply a `customer_id` filter; never return cross-tenant data
+5. **Authorization must be fully implemented** - never stub, skip, or comment out auth checks; all protected routes/functions must verify identity and permissions before executing
+6. **Keep dependencies updated** - check with `task security-scan`
+7. **Follow OWASP guidelines** - for web-facing code
 
 ## Common Patterns
 
