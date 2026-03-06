@@ -37,6 +37,10 @@ def test_main_function():
         patch("main.create_table") as mock_create_table,
         patch("main.store_record", return_value=1) as mock_store_record,
         patch("main.get_records", return_value=[]) as mock_get_records,
+        patch("main.create_kv_table") as mock_create_kv_table,
+        patch("main.kv_set") as mock_kv_set,
+        patch("main.kv_get", return_value="0.1.0") as mock_kv_get,
+        patch("main.kv_list", return_value=[]) as mock_kv_list,
         patch("main.create_guardrail_table") as mock_create_guardrail_table,
         patch(
             "main.scan_directory", return_value=empty_scan_result
@@ -52,6 +56,10 @@ def test_main_function():
             mock_conn, name="startup", data="Application started successfully"
         )
         mock_get_records.assert_called_once_with(mock_conn)
+        mock_create_kv_table.assert_called_once_with(mock_conn)
+        assert mock_kv_set.call_count == 2
+        mock_kv_get.assert_called_once_with(mock_conn, "app.version")
+        mock_kv_list.assert_called_once_with(mock_conn)
         mock_create_guardrail_table.assert_called_once_with(mock_conn)
         mock_scan_directory.assert_called_once()
         mock_store_findings.assert_called_once_with(mock_conn, empty_scan_result)
