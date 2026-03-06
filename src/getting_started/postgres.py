@@ -123,3 +123,103 @@ def get_records(
         records = cur.fetchall()
     LOG.info("Retrieved %d records from '%s'", len(records), table)
     return records
+
+
+KV_TABLE = "kv_store"
+
+
+def create_kv_table(conn: psycopg.Connection) -> None:
+    """Create the key-value store table if it does not exist.
+
+    Args:
+        conn: An active psycopg connection.
+    """
+    query = f"""
+    CREATE TABLE IF NOT EXISTS {KV_TABLE} (
+        key VARCHAR(255) PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+    """
+    with conn.cursor() as cur:
+        cur.execute(query)
+    conn.commit()
+    LOG.info("Table '%s' is ready", KV_TABLE)
+
+
+def kv_set(conn: psycopg.Connection, key: str, value: str) -> None:
+    """Set a key-value pair, inserting or updating as needed.
+
+    Args:
+        conn: An active psycopg connection.
+        key: The key to store.
+        value: The value to associate with the key.
+    """
+    query = f"""
+    INSERT INTO {KV_TABLE} (key, value, updated_at)
+    VALUES (%s, %s, %s)
+    ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_at = EXCLUDED.updated_at
+    """
+    with conn.cursor() as cur:
+        cur.execute(query, (key, value, datetime.now(timezone.utc)))
+    conn.commit()
+    LOG.info("Set key='%s'", key)
+
+
+def kv_get(conn: psycopg.Connection, key: str) -> Optional[str]:
+    """Get the value for a key.
+
+    Args:
+        conn: An active psycopg connection.
+        key: The key to look up.
+
+    Returns:
+        The value if found, or None.
+    """
+    query = f"SELECT value FROM {KV_TABLE} WHERE key = %s"
+    with conn.cursor() as cur:
+        cur.execute(query, (key,))
+        row = cur.fetchone()
+    if row is None:
+        LOG.debug("Key '%s' not found", key)
+        return None
+    return row["value"]
+
+
+def kv_delete(conn: psycopg.Connection, key: str) -> bool:
+    """Delete a key-value pair.
+
+    Args:
+        conn: An active psycopg connection.
+        key: The key to delete.
+
+    Returns:
+        True if the key was deleted, False if it did not exist.
+    """
+    query = f"DELETE FROM {KV_TABLE} WHERE key = %s"
+    with conn.cursor() as cur:
+        cur.execute(query, (key,))
+        deleted = cur.rowcount > 0
+    conn.commit()
+    if deleted:
+        LOG.info("Deleted key='%s'", key)
+    else:
+        LOG.debug("Key '%s' not found for deletion", key)
+    return deleted
+
+
+def kv_list(conn: psycopg.Connection) -> list[dict]:
+    """List all key-value pairs.
+
+    Args:
+        conn: An active psycopg connection.
+
+    Returns:
+        A list of dictionaries with key, value, and updated_at fields.
+    """
+    query = f"SELECT key, value, updated_at FROM {KV_TABLE} ORDER BY key"
+    with conn.cursor() as cur:
+        cur.execute(query)
+        rows = cur.fetchall()
+    LOG.info("Listed %d key-value pairs", len(rows))
+    return rows

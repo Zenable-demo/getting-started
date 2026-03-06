@@ -11,7 +11,16 @@ from getting_started.guardrails import (
     scan_directory,
     store_findings,
 )
-from getting_started.postgres import connect, create_table, get_records, store_record
+from getting_started.postgres import (
+    connect,
+    create_kv_table,
+    create_table,
+    get_records,
+    kv_get,
+    kv_list,
+    kv_set,
+    store_record,
+)
 
 
 def main():
@@ -31,6 +40,16 @@ def main():
                 record["name"],
                 record["created_at"],
             )
+
+        # Store application metadata in KV store
+        create_kv_table(conn)
+        kv_set(conn, "app.version", "0.1.0")
+        kv_set(conn, "app.name", "getting-started")
+        version = kv_get(conn, "app.version")
+        log.info("App version from KV store: %s", version)
+        all_kv = kv_list(conn)
+        for entry in all_kv:
+            log.info("KV: %s = %s", entry["key"], entry["value"])
 
         # Run guardrails scan
         scan_dir = Path(config.get_scan_dir())
