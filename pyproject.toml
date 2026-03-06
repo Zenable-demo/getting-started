@@ -6,6 +6,7 @@ authors = [
     { name = "Zenable Inc", email = "Python@zenable.io" }
 ]
 dependencies = [
+    "cryptography>=43.0.0",
     "psycopg[binary]>=3.2.0",
 ]
 readme = "README.md"

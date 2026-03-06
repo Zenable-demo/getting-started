@@ -18,9 +18,12 @@ def test_main_import():
 
 
 @pytest.mark.unit
-def test_main_function():
+def test_main_function(monkeypatch):
     """Test that main() connects to postgres, stores a record, and runs guardrails scan"""
     from main import main
+
+    monkeypatch.setenv("CUSTOMER_ID", "test-customer")
+    monkeypatch.setenv("ENCRYPTION_MASTER_KEY", "test-key")
 
     mock_conn = MagicMock()
     mock_cursor = MagicMock()
@@ -49,10 +52,31 @@ def test_main_function():
 
         mock_create_table.assert_called_once_with(mock_conn)
         mock_store_record.assert_called_once_with(
-            mock_conn, name="startup", data="Application started successfully"
+            mock_conn,
+            name="startup",
+            customer_id="test-customer",
+            data="Application started successfully",
         )
-        mock_get_records.assert_called_once_with(mock_conn)
+        mock_get_records.assert_called_once_with(mock_conn, customer_id="test-customer")
         mock_create_guardrail_table.assert_called_once_with(mock_conn)
         mock_scan_directory.assert_called_once()
-        mock_store_findings.assert_called_once_with(mock_conn, empty_scan_result)
+        mock_store_findings.assert_called_once_with(
+            mock_conn, empty_scan_result, customer_id="test-customer"
+        )
         mock_conn.close.assert_called_once()
+
+
+@pytest.mark.unit
+def test_main_requires_customer_id(monkeypatch):
+    """Test that main() exits with error when CUSTOMER_ID is not set."""
+    from main import main
+
+    monkeypatch.delenv("CUSTOMER_ID", raising=False)
+
+    with (
+        patch("getting_started.config.get_args_config") as mock_args,
+        patch("getting_started.config.get_scan_dir", return_value="."),
+        pytest.raises(SystemExit),
+    ):
+        mock_args.return_value = {"loglevel": logging.WARNING, "scan_dir": "."}
+        main()
