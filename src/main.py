@@ -3,6 +3,7 @@
 getting-started script entrypoint
 """
 
+import os
 from pathlib import Path
 
 from getting_started import config
@@ -19,11 +20,21 @@ def main():
     log = config.setup_logging()
     log.debug("Logging initialized with level: %s", log.level)
 
+    customer_id = os.environ.get("CUSTOMER_ID", "")
+    if not customer_id:
+        log.error("CUSTOMER_ID environment variable must be set")
+        raise SystemExit(1)
+
     conn = connect()
     try:
         create_table(conn)
-        store_record(conn, name="startup", data="Application started successfully")
-        records = get_records(conn)
+        store_record(
+            conn,
+            name="startup",
+            customer_id=customer_id,
+            data="Application started successfully",
+        )
+        records = get_records(conn, customer_id=customer_id)
         for record in records:
             log.info(
                 "Record: id=%s name=%s created_at=%s",
@@ -36,7 +47,7 @@ def main():
         scan_dir = Path(config.get_scan_dir())
         create_guardrail_table(conn)
         result = scan_directory(scan_dir)
-        stored_count = store_findings(conn, result)
+        stored_count = store_findings(conn, result, customer_id=customer_id)
         log.info("Guardrails scan complete: %d findings stored", stored_count)
 
         summary = result.summary_by_pattern()
