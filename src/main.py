@@ -6,6 +6,13 @@ getting-started script entrypoint
 from pathlib import Path
 
 from getting_started import config
+from getting_started.customers import (
+    create_customer,
+    create_customer_table,
+    get_customer,
+    list_customers,
+    update_customer,
+)
 from getting_started.guardrails import (
     create_guardrail_table,
     scan_directory,
@@ -61,6 +68,33 @@ def main():
         summary = result.summary_by_pattern()
         for pattern_name, count in summary.items():
             log.info("  %s: %d finding(s)", pattern_name, count)
+
+        # Customer data management
+        create_customer_table(conn)
+        customer_id = create_customer(
+            conn, name="Alice Smith", email="alice@example.com", company="Acme Corp"
+        )
+        log.info("Created customer id=%d", customer_id)
+        create_customer(conn, name="Bob Jones", email="bob@example.com")
+
+        customer = get_customer(conn, customer_id)
+        if customer:
+            log.info(
+                "Customer: id=%s name=%s email=%s",
+                customer["id"],
+                customer["name"],
+                customer["email"],
+            )
+
+        update_customer(conn, customer_id, status="inactive")
+        customers = list_customers(conn)
+        for c in customers:
+            log.info(
+                "Customer: id=%s name=%s status=%s",
+                c["id"],
+                c["name"],
+                c["status"],
+            )
     finally:
         conn.close()
         log.info("Database connection closed")

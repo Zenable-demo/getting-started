@@ -31,6 +31,13 @@ def test_main_function():
 
     empty_scan_result = ScanResult(scan_directory=".", extensions={".py"})
 
+    mock_customer = {
+        "id": 1,
+        "name": "Alice Smith",
+        "email": "alice@example.com",
+        "status": "active",
+    }
+
     with (
         patch("getting_started.config.get_args_config") as mock_args,
         patch("main.connect", return_value=mock_conn),
@@ -47,6 +54,13 @@ def test_main_function():
         ) as mock_scan_directory,
         patch("main.store_findings", return_value=0) as mock_store_findings,
         patch("getting_started.config.get_scan_dir", return_value="."),
+        patch("main.create_customer_table") as mock_create_customer_table,
+        patch("main.create_customer", return_value=1) as mock_create_customer,
+        patch("main.get_customer", return_value=mock_customer) as mock_get_customer,
+        patch("main.update_customer", return_value=True) as mock_update_customer,
+        patch(
+            "main.list_customers", return_value=[mock_customer]
+        ) as mock_list_customers,
     ):
         mock_args.return_value = {"loglevel": logging.WARNING, "scan_dir": "."}
         main()
@@ -63,4 +77,9 @@ def test_main_function():
         mock_create_guardrail_table.assert_called_once_with(mock_conn)
         mock_scan_directory.assert_called_once()
         mock_store_findings.assert_called_once_with(mock_conn, empty_scan_result)
+        mock_create_customer_table.assert_called_once_with(mock_conn)
+        assert mock_create_customer.call_count == 2
+        mock_get_customer.assert_called_once_with(mock_conn, 1)
+        mock_update_customer.assert_called_once_with(mock_conn, 1, status="inactive")
+        mock_list_customers.assert_called_once_with(mock_conn)
         mock_conn.close.assert_called_once()
