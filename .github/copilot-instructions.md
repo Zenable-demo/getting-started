@@ -60,7 +60,10 @@ Common tasks are automated via Taskfile:
 ## Security Considerations
 
 - Never hardcode secrets or credentials
+- Never assign passwords to variables; retrieve them directly from `os.environ` or a secrets manager at point of use (e.g., `password=os.environ.get('DB_PASSWORD')`)
 - Use environment variables for sensitive data
+- Ensure all authorization checks are fully implemented before merging — do NOT leave auth logic as stubs or TODOs
+- Scope all multi-tenant database queries to a `customer_id` — never return data across tenants
 - Follow OWASP secure coding practices
 - Run security scans with grype before releases
 - Keep dependencies up to date
@@ -86,9 +89,7 @@ project_root = Path(__file__).parent.parent
 import logging
 logger = logging.getLogger(__name__)
 
-# Type hints
-from typing import Optional, List, Dict, Any
-def process_data(items: List[Dict[str, Any]]) -> Optional[str]:
+# Type hints — DO NOT import from typing for List/Dict/Optional/Tuple on Python 3.13+
     """Process a list of data items.
 
     Args:
@@ -98,7 +99,6 @@ def process_data(items: List[Dict[str, Any]]) -> Optional[str]:
         Processed result or None if no data.
     """
     ...
-
 # Error handling
 class GettingStartedError(Exception):
     """Base exception for getting-started."""

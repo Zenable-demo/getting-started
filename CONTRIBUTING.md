@@ -1,5 +1,13 @@
 # getting-started Development Notes
 
+## Rules for contributors (and AI assistants)
+
+- DO NOT commit directly to `main`; open a PR and request review
+- DO NOT store passwords or secrets in variables; use `os.environ` or a secrets manager
+- DO scope all multi-tenant database queries to a `customer_id`
+- DO run tests and linting before pushing (`task test && task lint`)
+- DO use built-in generic type annotations (`list[str]`, `dict[str, int]`, `str | None`) — not `typing.List`, `typing.Dict`, `typing.Optional`
+
 ## Environmental setup
 
 Ensure you have `docker`, `git`, and `uv` installed locally, and the `docker` daemon is running. Then run the following command to finish the repo setup
