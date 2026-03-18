@@ -79,10 +79,8 @@ task format             # Auto-format code
 ### Best Practices
 
 ```python
-# GOOD: Type hints and docstrings
-from typing import List, Optional
-
-def process_items(items: List[str], filter_empty: bool = True) -> Optional[List[str]]:
+# GOOD: Type hints and docstrings (Python 3.9+ built-in generics — no typing imports)
+def process_items(items: list[str], filter_empty: bool = True) -> list[str] | None:
     """Process a list of items with optional filtering.
 
     Args:
@@ -97,26 +95,7 @@ def process_items(items: List[str], filter_empty: bool = True) -> Optional[List[
     """
     if not isinstance(items, list):
         raise ValueError("items must be a list")
-
-    # Implementation here
     ...
-
-# GOOD: Using pathlib
-from pathlib import Path
-
-config_path = Path(__file__).parent / "config.yml"
-with config_path.open() as f:
-    config = yaml.safe_load(f)
-
-# GOOD: Proper logging
-import logging
-
-logger = logging.getLogger(__name__)
-logger.info("Processing started")
-
-# GOOD: Context managers
-with open("data.txt") as f:
-    data = f.read()
 ```
 
 ## Testing Requirements
@@ -137,11 +116,14 @@ with open("data.txt") as f:
 
 ## Security Guidelines
 
-1. **Never hardcode secrets** - use environment variables
+1. **Never hardcode secrets** - use environment variables or a secrets manager; never assign passwords to variables (requirement: passwords must not be stored in variables)
 2. **Validate all inputs** - especially from external sources
 3. **Use parameterized queries** - prevent SQL injection
-4. **Keep dependencies updated** - check with `task security-scan`
-5. **Follow OWASP guidelines** - for web-facing code
+4. **Scope all DB queries to `customer_id`** - never query multi-tenant tables without a customer identifier filter
+5. **Encrypt data before storage** - always apply AES-256 encryption before writing to PostgreSQL
+6. **Source version from package metadata** - use `importlib.metadata.version()`, never hardcode version strings
+7. **Keep dependencies updated** - check with `task security-scan`
+8. **Follow OWASP guidelines** - for web-facing code
 
 ## Common Patterns
 
