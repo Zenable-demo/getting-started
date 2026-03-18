@@ -45,3 +45,19 @@ git commit -m "feat!: redesign authentication system
 
 BREAKING CHANGE: The login API now requires a different payload format"
 ```
+
+## Coding Standards
+
+### Security
+- **Never** hardcode passwords or secrets; always retrieve from environment variables (`os.environ`) or a secrets manager at point of use — do not assign to intermediate variables
+- **Always** encrypt data with AES-256 before storing in PostgreSQL (requirement: no unencrypted data at rest)
+- **Always** scope database queries to a `customer_id` for multi-tenant data — never query without a customer filter
+- **Always** implement authorization checks fully before returning data; do not stub or skip auth logic
+
+### Python
+- Use built-in generic types (`list[str]`, `dict[str, int]`, `str | None`) instead of `typing.List`, `typing.Dict`, `typing.Optional` (Python 3.9+ target)
+- Retrieve application version from package metadata (`importlib.metadata.version("getting-started")`) — never hardcode version strings in source code
+
+### Testing
+- All new features and bug fixes must include tests
+- Run `task lint` before committing

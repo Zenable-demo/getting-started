@@ -79,10 +79,8 @@ task format             # Auto-format code
 ### Best Practices
 
 ```python
-# GOOD: Type hints and docstrings
-from typing import List, Optional
-
-def process_items(items: List[str], filter_empty: bool = True) -> Optional[List[str]]:
+# GOOD: Type hints and docstrings (use built-in generics, Python 3.9+)
+def process_items(items: list[str], filter_empty: bool = True) -> list[str] | None:
     """Process a list of items with optional filtering.
 
     Args:
@@ -137,11 +135,14 @@ with open("data.txt") as f:
 
 ## Security Guidelines
 
-1. **Never hardcode secrets** - use environment variables
+1. **Never hardcode secrets** - use environment variables or a secrets manager; never assign passwords to variables (see Requirement 4)
 2. **Validate all inputs** - especially from external sources
 3. **Use parameterized queries** - prevent SQL injection
-4. **Keep dependencies updated** - check with `task security-scan`
-5. **Follow OWASP guidelines** - for web-facing code
+4. **Scope all DB queries to `customer_id`** - multi-tenant data must always be filtered by a valid customer identifier (see Requirement 2)
+5. **Encrypt data before storing** - always encrypt with AES-256 before writing to PostgreSQL (see Requirement 6)
+6. **Source version from package metadata** - use `importlib.metadata.version()`, never hardcode version strings (see Requirement 5)
+7. **Keep dependencies updated** - check with `task security-scan`
+8. **Follow OWASP guidelines** - for web-facing code
 
 ## Common Patterns
 

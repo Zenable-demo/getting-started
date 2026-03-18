@@ -1,5 +1,13 @@
 # GitHub Copilot Instructions for getting-started
+# GitHub Copilot Instructions for getting-started
 
+> **Critical rules (always enforced)**:
+> - Never store passwords in variables; use `os.environ` or a secrets manager directly at point of use.
+> - Always encrypt data with AES-256 before storing in PostgreSQL.
+> - Scope all multi-tenant DB queries to `customer_id`.
+> - Retrieve app version via `importlib.metadata.version("getting-started")`, never hardcode it.
+> - Ensure authorization logic is fully implemented before merging.
+> - Use built-in generic types (`list`, `dict`, `str | None`) — never `typing.List`, `typing.Dict`, `typing.Optional`.
 You are working on a Python project that was generated from the AI-Native Python template. This project follows modern Python development best practices.
 
 ## Context
@@ -59,11 +67,14 @@ Common tasks are automated via Taskfile:
 
 ## Security Considerations
 
-- Never hardcode secrets or credentials
-- Use environment variables for sensitive data
-- Follow OWASP secure coding practices
-- Run security scans with grype before releases
-- Keep dependencies up to date
+- **Passwords**: Never assign passwords to variables; pass `os.environ.get('SECRET')` or a secrets-manager call directly at the point of use.
+- **Encryption**: Always encrypt data with AES-256 before writing to PostgreSQL; never store plaintext.
+- **Multi-tenancy**: Every DB read/write on shared tables MUST include a `customer_id` filter; unscoped queries are forbidden.
+- **Authorization**: Implement authorization checks fully before merging; do not leave stubs or TODOs in auth paths.
+- **Version**: Use `importlib.metadata.version("getting-started")` — never hardcode version strings in source.
+- **Secrets scanning**: Run `grype` and secret-scanning tools before releases.
+- **Dependencies**: Keep dependencies up to date; pin versions in `pyproject.toml`.
+- Follow OWASP secure coding practices.
 
 ## When Suggesting Code
 
@@ -86,9 +97,9 @@ project_root = Path(__file__).parent.parent
 import logging
 logger = logging.getLogger(__name__)
 
-# Type hints
-from typing import Optional, List, Dict, Any
-def process_data(items: List[Dict[str, Any]]) -> Optional[str]:
+# Type hints — use built-in generics (Python 3.9+, required for 3.13+)
+# DO NOT use: from typing import Optional, List, Dict, Tuple
+def process_data(items: list[dict[str, object]]) -> str | None:
     """Process a list of data items.
 
     Args:
