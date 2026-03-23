@@ -87,8 +87,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Type hints
-from typing import Optional, List, Dict, Any
-def process_data(items: List[Dict[str, Any]]) -> Optional[str]:
+# Type hints — use built-in generics (Python 3.9+, required for 3.13+)
+def process_data(items: list[dict[str, object]]) -> str | None:
     """Process a list of data items.
 
     Args:
