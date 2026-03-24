@@ -79,10 +79,8 @@ task format             # Auto-format code
 ### Best Practices
 
 ```python
-# GOOD: Type hints and docstrings
-from typing import List, Optional
-
-def process_items(items: List[str], filter_empty: bool = True) -> Optional[List[str]]:
+# GOOD: Type hints and docstrings (Python 3.13+ — use built-in generics, NOT typing.List/Optional)
+def process_items(items: list[str], filter_empty: bool = True) -> list[str] | None:
     """Process a list of items with optional filtering.
 
     Args:
@@ -97,26 +95,12 @@ def process_items(items: List[str], filter_empty: bool = True) -> Optional[List[
     """
     if not isinstance(items, list):
         raise ValueError("items must be a list")
-
-    # Implementation here
     ...
-
-# GOOD: Using pathlib
-from pathlib import Path
-
-config_path = Path(__file__).parent / "config.yml"
-with config_path.open() as f:
-    config = yaml.safe_load(f)
 
 # GOOD: Proper logging
 import logging
-
 logger = logging.getLogger(__name__)
 logger.info("Processing started")
-
-# GOOD: Context managers
-with open("data.txt") as f:
-    data = f.read()
 ```
 
 ## Testing Requirements
