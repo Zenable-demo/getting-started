@@ -2,46 +2,43 @@
 
 ## Environmental setup
 
-Ensure you have `docker`, `git`, and `uv` installed locally, and the `docker` daemon is running. Then run the following command to finish the repo setup
-locally:
+Prerequisites: `docker`, `git`, `uv` installed; `docker` daemon running.
 
 ```bash
 task init
 ```
 
-## Linting locally
+## Common tasks
 
-```bash
-task lint
-```
+| Task | Command |
+|------|---------|
+| Lint | `task lint` |
+| Update deps | `task update` |
 
-## Updating the dependencies
+## Security & coding rules
 
-```bash
-task update
-```
+- **No hardcoded secrets or passwords** — use `os.environ` or a secrets manager at point of use; never assign to a variable.
+- **SQL identifiers** — use static string literals only; never f-strings or concatenation for table/column names.
+- **Multi-tenant queries** — always scope DB reads/writes to `customer_id`.
+- **Sensitive data at rest** — encrypt with AES-256 before writing to storage.
+- **Type annotations** — use built-in generics (`list[str]`, `dict[str, int]`, `str | None`); do NOT import `List`, `Dict`, `Optional` from `typing`.
+- **App version** — retrieve via `importlib.metadata.version("getting-started")`; never hardcode a version string.
+- **Authorization** — fully implement and test auth checks; never stub or skip them.
 
 ## Creating a release
 
-Releases are created automatically by python-semantic-release based on conventional commits. The version bump is determined by your commit messages:
+Releases are automated via python-semantic-release from conventional commits:
 
-- `fix:` commits bump patch version (0.0.x)
-- `feat:` commits bump minor version (0.x.0)
-- `BREAKING CHANGE:` in commit body bumps major version (x.0.0)
+- `fix:` → patch bump (0.0.x)
+- `feat:` → minor bump (0.x.0)
+- `BREAKING CHANGE:` in body → major bump (x.0.0)
 
-To create a release, use the release GitHub action:
+Trigger via the **release** GitHub Action. Example commits:
 
-Example commit messages:
+```
+fix: resolve user login issue
+feat: add user profile page
+feat!: redesign authentication system
 
-```bash
-# Patch release (0.0.1 -> 0.0.2)
-git commit -m "fix: resolve user login issue"
-
-# Minor release (0.0.2 -> 0.1.0)
-git commit -m "feat: add user profile page"
-
-# Major release (0.1.0 -> 1.0.0)
-git commit -m "feat!: redesign authentication system
-
-BREAKING CHANGE: The login API now requires a different payload format"
+BREAKING CHANGE: login API requires new payload format
 ```
