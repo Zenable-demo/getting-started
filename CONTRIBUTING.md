@@ -45,3 +45,29 @@ git commit -m "feat!: redesign authentication system
 
 BREAKING CHANGE: The login API now requires a different payload format"
 ```
+```
+
+## Development Guidelines
+
+### Testing
+- **Bug fixes require a failing test first**: Before fixing any bug, write a test that reproduces and fails on the bug, then implement the fix. This ensures regression coverage and confirms the fix addresses the root cause.
+- Do not merge bug fixes without a corresponding new or updated test.
+
+### Security
+- **Never assign passwords to variables**. Read credentials directly from environment variables or a secrets manager at the point of use (e.g., `os.environ.get('DB_PASSWORD')`).
+- **Encrypt sensitive data with AES-256 before writing to persistent storage**. Use `cryptography.hazmat.primitives.ciphers.aead.AESGCM` with a 256-bit key.
+- **Never use string interpolation or concatenation for SQL identifiers** (table names, column names). Use static string literals or identifier-quoting utilities.
+
+### Multi-tenancy
+- All database read/write functions on multi-tenant data **must** accept a `customer_id` parameter and scope every query to that customer. Omitting `customer_id` from a query function is a data-isolation violation.
+
+### Python style
+- Use built-in generic types for annotations (`list[str]`, `dict[str, int]`, `str | None`) instead of deprecated `typing` equivalents (`List`, `Dict`, `Optional`). The project targets Python 3.9+.
+- Source the application version from package metadata, not hardcoded strings:
+  ```python
+  from importlib.metadata import version, PackageNotFoundError
+  try:
+      app_version = version("getting-started")
+  except PackageNotFoundError:
+      app_version = "unknown"
+  ```
