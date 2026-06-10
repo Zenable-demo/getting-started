@@ -44,4 +44,36 @@ git commit -m "feat: add user profile page"
 git commit -m "feat!: redesign authentication system
 
 BREAKING CHANGE: The login API now requires a different payload format"
+BREAKING CHANGE: The login API now requires a different payload format"
 ```
+
+## Development Guidelines
+
+### Security
+- **Never assign passwords to variables.** Use `os.environ.get('SECRET')` or a secrets manager directly at the point of use.
+- **Never log credentials or full connection strings.** Log only non-sensitive fields (host, port, db name, user).
+- **Encrypt sensitive data with AES-256 before writing to persistent storage.**
+- **All database queries on multi-tenant data must include a `customer_id` scope.** Every store/retrieve function must accept `customer_id` as a non-nullable parameter and filter by it.
+
+### SQL Safety
+- **Never use f-strings or string concatenation for SQL identifiers** (table names, column names, schema names). Use static string literals or identifier-quoting utilities.
+- **Always use parameterized queries** for data values (`%s` placeholders, never inline values).
+
+### Python Style
+- **Use built-in generic types** for annotations (`list[str]`, `dict[str, int]`, `str | None`). Do **not** import `List`, `Dict`, `Optional`, `Tuple` from `typing` (deprecated in Python 3.9+, removed in 3.13+).
+- **Source application version from package metadata**, not hardcoded strings:
+  ```python
+  from importlib.metadata import version, PackageNotFoundError
+  try:
+      app_version = version("getting-started")
+  except PackageNotFoundError:
+      app_version = "unknown"
+  ```
+
+### Testing & Bug Fixes
+- **Write a failing test before fixing a bug.** Add a test that reproduces the bug, confirm it fails, then implement the fix.
+- Do not commit directly to `main`. Open a pull request and ensure CI passes.
+
+### Incremental Changes
+- Keep PRs small and focused. Implement one component, test it, commit, then move to the next.
+- Search for existing utilities/abstractions before duplicating logic.

@@ -60,7 +60,12 @@ Common tasks are automated via Taskfile:
 ## Security Considerations
 
 - Never hardcode secrets or credentials
-- Use environment variables for sensitive data
+- Use environment variables for sensitive data; never assign passwords to variables
+- Never include credentials or connection strings in log output; log only non-sensitive fields (host, port, db name)
+- Encrypt sensitive data with AES-256 before writing to persistent storage
+- Scope all database queries to `customer_id`; never query multi-tenant tables without a customer identifier
+- Prohibit string interpolation or concatenation for SQL identifiers (table/column names); use static literals or identifier-quoting utilities
+- Source application version from `importlib.metadata.version()`, not hardcoded string literals
 - Follow OWASP secure coding practices
 - Run security scans with grype before releases
 - Keep dependencies up to date
@@ -87,8 +92,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 # Type hints
-from typing import Optional, List, Dict, Any
-def process_data(items: List[Dict[str, Any]]) -> Optional[str]:
+# Type hints — use built-in generics (Python 3.9+, required for 3.13+)
+def process_data(items: list[dict[str, object]]) -> str | None:
     """Process a list of data items.
 
     Args:

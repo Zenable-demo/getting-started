@@ -79,10 +79,8 @@ task format             # Auto-format code
 ### Best Practices
 
 ```python
-# GOOD: Type hints and docstrings
-from typing import List, Optional
-
-def process_items(items: List[str], filter_empty: bool = True) -> Optional[List[str]]:
+# GOOD: Type hints and docstrings (use built-in generics, NOT typing.List/Dict/Optional)
+def process_items(items: list[str], filter_empty: bool = True) -> list[str] | None:
     """Process a list of items with optional filtering.
 
     Args:
@@ -138,10 +136,14 @@ with open("data.txt") as f:
 ## Security Guidelines
 
 1. **Never hardcode secrets** - use environment variables
-2. **Validate all inputs** - especially from external sources
-3. **Use parameterized queries** - prevent SQL injection
-4. **Keep dependencies updated** - check with `task security-scan`
-5. **Follow OWASP guidelines** - for web-facing code
+2. **Never assign passwords to variables** - use secrets at point of use (e.g., `os.environ.get('DB_PASSWORD')` directly in connection call)
+3. **Validate all inputs** - especially from external sources
+4. **Use parameterized queries** - prevent SQL injection; never use f-strings or string concatenation for SQL identifiers (table/column names)
+5. **Scope all DB queries to customer_id** - every read/write on multi-tenant data must include a `customer_id` filter
+6. **Encrypt sensitive data at rest** - use AES-256 (e.g., AES-256-GCM via `cryptography` library) before writing to storage
+7. **Never log credentials** - log only non-sensitive fields (host, port, db name); never construct or log connection strings containing passwords
+8. **Keep dependencies updated** - check with `task security-scan`
+9. **Follow OWASP guidelines** - for web-facing code
 
 ## Common Patterns
 
