@@ -174,39 +174,9 @@ except FileNotFoundError:
 ```
 
 ### CLI Entry Points
-```python
-import argparse
-import logging
-import sys
-
-def main():
-    """Main entry point for the CLI."""
-    parser = argparse.ArgumentParser(
-        description="A playground for getting started with Zenable"
-    )
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Enable verbose logging"
-    )
-
-    args = parser.parse_args()
-
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-
-    try:
-        # Your main logic here
-        pass
-    except KeyboardInterrupt:
-        logger.info("Operation cancelled by user")
-        sys.exit(1)
-    except Exception as e:
-        logger.exception("Unexpected error occurred")
-        sys.exit(1)
-```
+See `getting_started/__main__.py` for the canonical CLI pattern (argparse, logging setup, top-level exception handling with `sys.exit(1)`).
+- Use `logger.exception(...)` for unexpected errors (includes traceback)
+- Exit code `1` for errors, `0` for success
 
 ## Task Reference
 
