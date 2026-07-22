@@ -63,10 +63,15 @@ def get_scan_dir() -> str:
     return configuration.get("scan_dir", ".")
 
 
-def setup_logging() -> logging.Logger:
-    """Setup logging"""
+def setup_logging(loglevel: int = None) -> logging.Logger:
+    """Setup logging.
+
+    Args:
+        loglevel: Logging level (e.g., logging.DEBUG). If None, uses WARNING.
+    """
+    if loglevel is None:
+        loglevel = logging.WARNING
     logging.basicConfig(level="WARNING", format=constants.LOG_FORMAT)
     log = logging.getLogger(__project_name__)
-    configuration = get_args_config()
-    logging.getLogger().setLevel(configuration["loglevel"])
+    logging.getLogger().setLevel(loglevel)
     return log

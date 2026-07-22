@@ -6,8 +6,9 @@ FROM ghcr.io/astral-sh/uv:python${PYTHON_VERSION}-bookworm-slim AS builder
 SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
 ARG DEV_MODE=false
-ENV UV_COMPILE_BYTECODE=1
+ENV UV_COMPILE_BYTECODE=0
 ENV UV_LINK_MODE=copy
+ENV PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -19,6 +20,7 @@ RUN --mount=type=cache,target=/root/.cache/uv \
 
 COPY "./src/getting_started" "/app/getting_started"
 COPY "./src/main.py" "/app/main.py"
+RUN find /app -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
 
 # Install the project with the project included
 RUN --mount=type=cache,target=/root/.cache/uv \
@@ -39,6 +41,7 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
 
 ENV PATH="/app/.venv/bin:$PATH"
 
@@ -72,4 +75,4 @@ LABEL org.opencontainers.image.licenses="MIT"
 
 USER app
 
-ENTRYPOINT ["python3", "/app/main.py"]
+ENTRYPOINT ["python3", "-B", "/app/main.py"]

@@ -184,6 +184,47 @@ tasks:
       # rebuild the builder instance, updating its BuildKit. There's no harm in running this even if we didn't do the `docker buildx rm` previously
       - task: init-docker-multiplatform
 
+  infra-up:
+    desc: Start the development infrastructure (postgres, redis, rabbitmq, api)
+    cmds:
+      - '{{.RUN_SCRIPT}} {{.SCRIPTS_DIR}}/infra_up.sh'
+
+  infra-down:
+    desc: Stop the development infrastructure
+    cmds:
+      - '{{.RUN_SCRIPT}} {{.SCRIPTS_DIR}}/infra_down.sh'
+
+  infra-reset:
+    desc: Reset infrastructure (removes volumes) and start fresh
+    cmds:
+      - '{{.RUN_SCRIPT}} {{.SCRIPTS_DIR}}/infra_reset.sh'
+
+  infra-logs:
+    desc: Stream logs from the development infrastructure
+    cmds:
+      - '{{.RUN_SCRIPT}} {{.SCRIPTS_DIR}}/infra_logs.sh'
+
+  init-frontend:
+    desc: Initialize frontend dependencies
+    cmds:
+      - '{{.RUN_SCRIPT}} {{.SCRIPTS_DIR}}/init_frontend.sh'
+
+  dev-frontend:
+    desc: Run the frontend development server
+    cmds:
+      - npm --prefix frontend run dev
+
+  export-openapi:
+    desc: Export OpenAPI specification from the API
+    cmds:
+      - '{{.RUN_SCRIPT}} {{.SCRIPTS_DIR}}/export_openapi.py'
+
+  smoke-test:
+    desc: Run end-to-end smoke tests against running infrastructure
+    deps: [infra-up]
+    cmds:
+      - '{{.RUN_SCRIPT}} {{.SCRIPTS_DIR}}/smoke_test.py'
+
   clean:
     desc: Clean up build artifacts, cache files/directories, temp files, etc.
     cmds:

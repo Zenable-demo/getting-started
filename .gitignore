@@ -1,4 +1,5 @@
 .task/*
+.claude/
 .lycheecache
 sbom.*.json
 vulns.*.json
@@ -329,3 +330,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/vim,emacs,visualstudiocode,python,macos,windows
+*.tar

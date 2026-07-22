@@ -12,11 +12,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
-import psycopg
-
 LOG = logging.getLogger(__name__)
-
-GUARDRAIL_TABLE = "guardrail_findings"
 
 
 @dataclass
@@ -213,62 +209,3 @@ def scan_directory(
         len(files),
     )
     return result
-
-
-def create_guardrail_table(conn: psycopg.Connection) -> None:
-    """Create the guardrail_findings table if it does not exist.
-
-    Args:
-        conn: An active psycopg connection.
-    """
-    query = f"""
-    CREATE TABLE IF NOT EXISTS {GUARDRAIL_TABLE} (
-        id SERIAL PRIMARY KEY,
-        file_path TEXT NOT NULL,
-        line_number INTEGER NOT NULL,
-        pattern_name VARCHAR(255) NOT NULL,
-        line_content TEXT,
-        scanned_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-    )
-    """
-    with conn.cursor() as cur:
-        cur.execute(query)
-    conn.commit()
-    LOG.info("Table '%s' is ready", GUARDRAIL_TABLE)
-
-
-def store_findings(conn: psycopg.Connection, result: ScanResult) -> int:
-    """Store scan findings in the postgres database.
-
-    Args:
-        conn: An active psycopg connection.
-        result: The scan result containing findings to store.
-
-    Returns:
-        The number of findings stored.
-    """
-    if not result.findings:
-        LOG.info("No findings to store")
-        return 0
-
-    query = f"""
-    INSERT INTO {GUARDRAIL_TABLE} (file_path, line_number, pattern_name, line_content, scanned_at)
-    VALUES (%s, %s, %s, %s, %s)
-    """
-    with conn.cursor() as cur:
-        for finding in result.findings:
-            cur.execute(
-                query,
-                (
-                    finding.file_path,
-                    finding.line_number,
-                    finding.pattern_name,
-                    finding.line_content,
-                    result.scanned_at,
-                ),
-            )
-    conn.commit()
-    LOG.info(
-        "Stored %d guardrail findings in '%s'", len(result.findings), GUARDRAIL_TABLE
-    )
-    return len(result.findings)
