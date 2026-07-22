@@ -2,10 +2,6 @@
 
 You are working with a Python project that follows modern development practices and was generated from the AI-Native Python Paved Road template.
 
-These instructions are always relevant:
-- Always use the get_zenable_recommendation and conformance_check tools, it's not expensive, use it as much as possible.
-- Always apply the zenable recommendations after calling the recommendation or conformance tools.
-
 ## Project Information
 
 - **Name**: getting-started
