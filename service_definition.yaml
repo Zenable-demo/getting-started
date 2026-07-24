@@ -11,13 +11,13 @@ develop:
       - name: postgres
         types: [sql_db]
         local_runtime: compose
-        version: "16"
+        version: "16.0"
       - name: redis
         types: [cache]
         local_runtime: compose
-        version: "7"
+        version: "7.0"
       - name: rabbitmq
-        types: [message_queue]
+        types: [queue]
         local_runtime: compose
         version: "3.13"
     service: []  # List of develop-time service dependencies
@@ -51,7 +51,7 @@ runtime:
           - name: redis
             types: [cache]
           - name: rabbitmq
-            types: [message_queue]
+            types: [queue]
         service: []  # No service deps for running in development
     # Example configuration for each environment:
     # sandbox:

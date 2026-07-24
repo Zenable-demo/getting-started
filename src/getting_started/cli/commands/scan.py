@@ -10,6 +10,7 @@ import logging
 from pathlib import Path
 
 from getting_started.guardrails import scan_directory
+from getting_started.reporting import write_report
 from getting_started.storage import get_backend
 
 LOG = logging.getLogger(__name__)
@@ -61,13 +62,13 @@ def run(args: argparse.Namespace) -> int:
             LOG.info("Entering interactive review mode...")
 
         output = getattr(args, "output", None)
-        if output:
-            output_format = getattr(args, "format", "json")
-            LOG.info("Would export to %s in %s format", output, output_format)
+        output_path = Path(output) if output else None
+        output_format = getattr(args, "format", "json")
+        write_report(result, output_format, output_path)
 
         return 0
 
-    except Exception as e:
+    except (OSError, ValueError) as e:
         LOG.error("Scan failed: %s", e)
         return 1
     finally:
