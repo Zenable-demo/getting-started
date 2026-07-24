@@ -21,6 +21,22 @@ task build
 docker run zenable-demo/getting-started:0.0.0 --help
 ```
 
+### Exporting scan reports
+
+Scans can be printed to standard output as JSON, CSV, SARIF, or Markdown:
+
+```bash
+uv run python -m getting_started --storage-backend sqlite \
+  scan . --format markdown
+```
+
+Use `--output` to save the report to a file instead:
+
+```bash
+uv run python -m getting_started --storage-backend sqlite \
+  scan . --format sarif --output scan-results.sarif
+```
+
 If you'd like to build all of the supported docker images, you can set the `PLATFORM` env var to `all` like this:
 
 ```bash
