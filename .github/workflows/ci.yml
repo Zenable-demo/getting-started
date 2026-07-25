@@ -34,7 +34,7 @@ jobs:
       - name: Set up QEMU for cross-platform emulation
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Install license compliance tool
         uses: actions/cache@v4
         id: grant-cache
@@ -93,7 +93,7 @@ jobs:
       - name: Set up QEMU for cross-platform emulation
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Build Docker image
         run: task -v build
         env:
