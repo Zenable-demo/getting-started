@@ -74,46 +74,11 @@ task format             # Auto-format code
 
 ### Best Practices
 
-```python
-# GOOD: Type hints and docstrings
-from typing import List, Optional
-
-def process_items(items: List[str], filter_empty: bool = True) -> Optional[List[str]]:
-    """Process a list of items with optional filtering.
-
-    Args:
-        items: List of strings to process.
-        filter_empty: Whether to remove empty strings.
-
-    Returns:
-        Processed list or None if all items filtered.
-
-    Raises:
-        ValueError: If items is not a list.
-    """
-    if not isinstance(items, list):
-        raise ValueError("items must be a list")
-
-    # Implementation here
-    ...
-
-# GOOD: Using pathlib
-from pathlib import Path
-
-config_path = Path(__file__).parent / "config.yml"
-with config_path.open() as f:
-    config = yaml.safe_load(f)
-
-# GOOD: Proper logging
-import logging
-
-logger = logging.getLogger(__name__)
-logger.info("Processing started")
-
-# GOOD: Context managers
-with open("data.txt") as f:
-    data = f.read()
-```
+- Use built-in types for hints (`list[str]`, `str | None`) — Python 3.10+ syntax; avoid `from typing import List, Optional`
+- Use `pathlib.Path` for file operations (not `open("...")` with string paths)
+- Use `logging.getLogger(__name__)` per module; never `print()` for diagnostics
+- Use context managers (`with`) for all file/resource access
+- Raise specific exceptions with descriptive messages; never silently swallow errors
 
 ## Testing Requirements
 
@@ -140,69 +105,19 @@ with open("data.txt") as f:
 5. **Follow OWASP guidelines** - for web-facing code
 
 ## Common Patterns
-
 ### Configuration Management
-```python
-from pathlib import Path
-import yaml
-
-def load_config(config_file: Path) -> dict:
-    """Load configuration from YAML file."""
-    with config_file.open() as f:
-        return yaml.safe_load(f)
-```
+- Load YAML config via `yaml.safe_load()` with `pathlib.Path.open()`
+- Never use `yaml.load()` (unsafe deserialization)
 
 ### Error Handling
-```python
-class GettingStartedError(Exception):
-    """Base exception for getting-started."""
-    pass
-
-class ConfigurationError(GettingStartedError):
-    """Raised when configuration is invalid."""
-    pass
-
-# Usage
-try:
-    config = load_config(config_path)
-except FileNotFoundError:
-    raise ConfigurationError(f"Config file not found: {config_path}")
-```
+- Define a base `GettingStartedError(Exception)` and specific subclasses
+- Catch narrow exceptions; re-raise as domain errors with context
+- Never use bare `except:` or `except Exception` without logging + re-raise
 
 ### CLI Entry Points
-```python
-import argparse
-import logging
-import sys
-
-def main():
-    """Main entry point for the CLI."""
-    parser = argparse.ArgumentParser(
-        description="A playground for getting started with Zenable"
-    )
-    parser.add_argument(
-        "--verbose", "-v",
-        action="store_true",
-        help="Enable verbose logging"
-    )
-
-    args = parser.parse_args()
-
-    logging.basicConfig(
-        level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-
-    try:
-        # Your main logic here
-        pass
-    except KeyboardInterrupt:
-        logger.info("Operation cancelled by user")
-        sys.exit(1)
-    except Exception as e:
-        logger.exception("Unexpected error occurred")
-        sys.exit(1)
-```
+- Use `argparse`; support `--verbose`/`-v` to set `logging.DEBUG`
+- Catch `KeyboardInterrupt` and unexpected exceptions at top level; call `sys.exit(1)` on failure
+- Use `logger.exception()` (not `logger.error()`) for unexpected errors to capture tracebacks
 
 ## Task Reference
 
